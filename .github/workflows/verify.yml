@@ -1,0 +1,57 @@
+name: Verify launch-board example
+
+on:
+  push:
+    branches: [main]
+  pull_request: {}
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  nextjs-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:16-bookworm
+        env:
+          POSTGRES_USER: guide
+          POSTGRES_PASSWORD: disposable-ci-only
+          POSTGRES_DB: helicarrier_guide
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U guide -d helicarrier_guide"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - name: Build without database credentials
+        run: npm run build
+      - name: Verify concurrent and repeated migrations
+        env:
+          TEST_DATABASE_URL: postgresql://guide:disposable-ci-only@127.0.0.1:5432/helicarrier_guide
+        run: npm run test:db
+      - name: Build the deployment image
+        run: docker build --tag helicarrier-guide:test .
+      - name: Run the release command and verify the read-only image
+        env:
+          DATABASE_URL: postgresql://guide:disposable-ci-only@127.0.0.1:5432/helicarrier_guide
+        run: |
+          docker run --rm --network host --env DATABASE_URL helicarrier-guide:test npm run db:migrate
+          docker run --detach --rm --name helicarrier-guide-check --network host --read-only --tmpfs /tmp --tmpfs /run --env DATABASE_URL helicarrier-guide:test
+          node test/smoke.mjs
+      - name: Remove the test application
+        if: always()
+        run: docker rm --force helicarrier-guide-check 2>/dev/null || true

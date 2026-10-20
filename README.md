@@ -2,7 +2,7 @@
 
 A small, read-only launch board for learning to deploy an application and its database on Helicarrier. The page reads fictional launch records from PostgreSQL on every request. It has no public write endpoint, login, third-party analytics, or production data.
 
-This example is being verified for a forthcoming screenshot guide. A successful local or CI test is not evidence of a completed Helicarrier deployment. Live tutorial screenshots and final dashboard instructions are still pending.
+Verified on Helicarrier on 21 October 2026 (Africa/Lagos): the GitHub-backed image deployed, its release migration succeeded, `/health` returned HTTP 200 with `{"ok":true}`, and the page read all four PostgreSQL records. A second release of the same commit retained exactly four records. The disposable app and database were removed afterward. The accompanying screenshot guide is prepared for publication review; the example repository is still private pending that review.
 
 ## Run locally
 
@@ -20,7 +20,7 @@ Open `http://localhost:3000`. You should see “PostgreSQL connected” and four
 
 The database is bound to `127.0.0.1:15439`. Its example password is deliberately only for disposable local use. Never copy it to a remote database. Next.js loads `.env.local` for the application; the migration command loads it explicitly. The file is ignored by Git and Docker.
 
-## Deployment settings to verify on Helicarrier
+## Deployment settings verified on Helicarrier
 
 Deploy from a GitHub repository containing this directory. When using this monorepo, set the service root directory to `examples/nextjs-postgres`; a standalone example repository would use its root. Use the included Dockerfile.
 
@@ -28,12 +28,14 @@ Deploy from a GitHub repository containing this directory. When using this monor
 | --- | --- |
 | Service type | Web service |
 | Internal port | `3000` |
-| Health-check path | `/health` |
+| Automatic health checks | `/health`, every 30 seconds, 3 failures before restart |
 | Release command | `npm run db:migrate` |
 | Database reference | PostgreSQL internal connection URL → `DATABASE_URL` |
 | Start command | Leave blank; the image starts `node server.js` |
 
 Create PostgreSQL in the same project/environment. Keep external access off for the application connection. Use a service reference rather than copying a connection string into source code. `DATABASE_URL` is read by server code at runtime; never rename it to a `NEXT_PUBLIC_` variable. No database credentials are required by `npm run build` or `docker build`.
+
+For the dashboard walkthrough, first create the app without a release command and apply the staged creation. An initial “Setup needed” page is expected. Add the private reference under Variables & secrets, set the release command in Service settings, then save and redeploy. This applies the connection and migration together. Enable the HTTP health check after the application is ready.
 
 Select and review the app and database plans before creating resources. The standard catalog lists a 512 MB app at $3/month and a 512 MB PostgreSQL service with 2 GB storage at $3.50/month, before optional backups and other charges. These are full-month reference rates, not a quoted total for a walkthrough; confirm the account's current rates in the dashboard. Build resource usage and production sizing need to be measured separately.
 
