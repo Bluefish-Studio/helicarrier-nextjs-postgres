@@ -2,7 +2,7 @@
 
 A small, read-only launch board for learning to deploy an application and its database on Helicarrier. The page reads fictional launch records from PostgreSQL on every request. It has no public write endpoint, login, third-party analytics, or production data.
 
-Verified on Helicarrier on 21 October 2026 (Africa/Lagos): the GitHub-backed image deployed, its release migration succeeded, `/health` returned HTTP 200 with `{"ok":true}`, and the page read all four PostgreSQL records. A second release of the same commit retained exactly four records. The disposable app and database were removed afterward. The accompanying screenshot guide is prepared for publication review; the example repository is still private pending that review.
+Verified on Helicarrier on 21 October 2026 (Africa/Lagos): the GitHub-backed image deployed, its release migration succeeded, `/health` returned HTTP 200 with `{"ok":true}`, and the page read all four PostgreSQL records. A second release of the same commit retained exactly four records. The disposable app and database were removed afterward. The step-by-step guide with screenshots is [Deploy Next.js and PostgreSQL on Helicarrier from GitHub](https://helicarrier.cloud/blog/from-repository-to-production).
 
 ## Run locally
 
@@ -22,7 +22,7 @@ The database is bound to `127.0.0.1:15439`. Its example password is deliberately
 
 ## Deployment settings verified on Helicarrier
 
-Deploy from a GitHub repository containing this directory. When using this monorepo, set the service root directory to `examples/nextjs-postgres`; a standalone example repository would use its root. Use the included Dockerfile.
+Fork this repository and deploy your fork from GitHub. Leave the service root directory empty (the repository root) and use the included Dockerfile.
 
 | Setting | Value |
 | --- | --- |
